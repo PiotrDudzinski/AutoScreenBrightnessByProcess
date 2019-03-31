@@ -19,6 +19,3 @@ while(1){
     }
     Write-Host $focus
 }
-
-#zobacz co zrobiłem, jak przeglądam memy to mi się ekran sam ściemna
-#jak robię coś innego to się podjaśnia 
