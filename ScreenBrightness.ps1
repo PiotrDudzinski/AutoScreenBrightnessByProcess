@@ -3,7 +3,7 @@ $code = @'
      public static extern IntPtr GetForegroundWindow();
 '@
 Add-Type $code -Name Utils -Namespace Win32
-$Brightness = (Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness).CurrentBrightness
+$prevBrig = (Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness).CurrentBrightness
 while(1)
 {
     $hwnd = [Win32.Utils]::GetForegroundWindow()
@@ -13,13 +13,20 @@ while(1)
 
     if($focus -eq 'chrome')
     {
-        (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,0)
+      if((Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness).CurrentBrightness -ne 0)
+        {
+            $prevBrig = (Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness).CurrentBrightness
+        }
+      (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,0)
     }
     else
     {
-        $Brightness = (Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness).CurrentBrightness
-        (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,$Brightness)
+        if((Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness).CurrentBrightness -eq 0)
+            {
+                (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, $prevBrig)
+            }
     }
     sleep -Milliseconds 200
     Write-Host $focus
 }
+
